@@ -58,13 +58,16 @@ const Dashboard: React.FC = () => {
       title: 'Unresolved',
       value: stats.unresolved,
       icon: XCircle,
-      color: 'bg-status-unresolved'
+      color: 'bg-status-unresolved',
+      change: { value: stats.percentageChange.unresolved, isUp: stats.percentageChange.unresolved > 0 }
     },
     {
       title: 'Emergency',
       value: stats.emergency,
       icon: AlertTriangle,
-      color: 'bg-red-600'
+      color: 'bg-red-600',
+      change: { value: stats.percentageChange.emergency, isUp: stats.percentageChange.emergency > 0 }
+
     }
   ];
 

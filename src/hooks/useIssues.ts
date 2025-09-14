@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Issue, DashboardStats } from '../types';
-import { mockIssues, mockStats } from '../utils/mockData';
+import { mockStats } from '../utils/mockData';
 import { useAuth } from '../contexts/AuthContext';
+import { fetchAllIssues } from '../services/api'; // the async function we made earlier
 
 export const useIssues = () => {
   const { user } = useAuth();
@@ -10,65 +11,79 @@ export const useIssues = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setTimeout(() => {
-      let filteredIssues = mockIssues;
-      
+    const loadIssues = async () => {
+      setLoading(true);
+
+      // 1. Fetch backend + mock issues
+      const allIssues = await fetchAllIssues();
+
+      // 2. Filter according to user role
+      let filteredIssues = allIssues;
       if (user?.role === 'water_dept') {
-        filteredIssues = mockIssues.filter(issue => 
-          issue.type === 'water_supply' && issue.assignedDepartment === 'Water Supply'
+        filteredIssues = allIssues.filter(
+          issue => issue.type === 'water_supply' && issue.assignedDepartment === 'Water Department'
         );
       } else if (user?.role === 'electricity_dept') {
-        filteredIssues = mockIssues.filter(issue => 
-          issue.type === 'electricity' && issue.assignedDepartment === 'Electricity'
+        filteredIssues = allIssues.filter(
+          issue => issue.type === 'electricity' && issue.assignedDepartment === 'Electricity Department'
         );
       } else if (user?.role === 'pwd_dept') {
-        filteredIssues = mockIssues.filter(issue => 
-          issue.type === 'roads_infrastructure' && issue.assignedDepartment === 'Public Works'
+        filteredIssues = allIssues.filter(
+          issue => issue.type === 'roads_infrastructure' && issue.assignedDepartment === 'PWD Department'
         );
       } else if (user?.role === 'sanitation_dept') {
-        filteredIssues = mockIssues.filter(issue => 
-          issue.type === 'sanitation' && issue.assignedDepartment === 'Sanitation'
+        filteredIssues = allIssues.filter(
+          issue => issue.type === 'sanitation' && issue.assignedDepartment === 'Sanitation Department'
         );
-      } else if (user?.role === 'ward_supervisor') {
-        filteredIssues = mockIssues.filter(issue => 
-          issue.location.ward === user.ward
-        );
+      } else if (user?.role === 'ward_supervisor' && user?.ward) {
+        filteredIssues = allIssues.filter(issue => issue.location.ward === user.ward);
       }
-      
+
+      // 3. Save issues
       setIssues(filteredIssues);
-      
-      // Calculate department-specific stats
-      const departmentStats = {
+
+      // 4. Calculate stats dynamically
+      const departmentStats: DashboardStats = {
         total: filteredIssues.length,
         resolved: filteredIssues.filter(i => i.status === 'resolved').length,
         pending: filteredIssues.filter(i => i.status === 'new' || i.status === 'assigned').length,
         inProgress: filteredIssues.filter(i => i.status === 'in_progress').length,
         unresolved: filteredIssues.filter(i => i.status === 'unresolved').length,
         emergency: filteredIssues.filter(i => i.priority === 'emergency').length,
-        percentageChange: mockStats.percentageChange
+        percentageChange: mockStats.percentageChange, // or calculate properly if needed
       };
-      
+
       setStats(user?.role === 'municipal_admin' ? mockStats : departmentStats);
       setLoading(false);
-    }, 500);
+    };
+
+    loadIssues();
   }, [user]);
 
-  const updateIssueStatus = (issueId: string, status: Issue['status'], assignedTo?: string, assignedDepartment?: string) => {
-    setIssues(prev => 
-      prev.map(issue => 
-        issue.id === issueId 
-          ? { 
-              ...issue, 
-              status, 
+  const updateIssueStatus = (
+    issueId: string,
+    status: Issue['status'],
+    assignedTo?: string,
+    assignedDepartment?: string
+  ) => {
+    setIssues(prev =>
+      prev.map(issue =>
+        issue.id === issueId
+          ? {
+              ...issue,
+              status,
               assignedTo: assignedTo || issue.assignedTo,
               assignedDepartment: assignedDepartment || issue.assignedDepartment,
-              timeline: [...issue.timeline, {
-                id: `tl-${Date.now()}`,
-                type: status === 'assigned' ? 'department_assigned' : status,
-                timestamp: new Date().toISOString(),
-                user: user?.name || 'System',
-                description: `Status updated to ${status.replace('_', ' ')}`
-              }]
+              timeline: [
+                ...issue.timeline,
+                {
+                  id: `tl-${Date.now()}`,
+                  type: status === 'assigned' ? 'department_assigned' : status,
+                  timestamp: new Date().toISOString(),
+                  user: user?.name || 'System',
+                  description: `Status updated to ${status.replace('_', ' ')}`,
+                },
+              ],
             }
           : issue
       )
@@ -81,12 +96,15 @@ export const useIssues = () => {
         issue.id === issueId
           ? {
               ...issue,
-              comments: [...issue.comments, {
-                id: `c-${Date.now()}`,
-                user: user?.name || 'User',
-                message,
-                timestamp: new Date().toISOString()
-              }]
+              comments: [
+                ...issue.comments,
+                {
+                  id: `c-${Date.now()}`,
+                  user: user?.name || 'User',
+                  message,
+                  timestamp: new Date().toISOString(),
+                },
+              ],
             }
           : issue
       )
@@ -98,6 +116,6 @@ export const useIssues = () => {
     stats,
     loading,
     updateIssueStatus,
-    addComment
+    addComment,
   };
 };

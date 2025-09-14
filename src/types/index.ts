@@ -65,5 +65,7 @@ export interface DashboardStats {
     resolved: number;
     pending: number;
     inProgress: number;
+    unresolved: number;
+    emergency: number;
   };
 }

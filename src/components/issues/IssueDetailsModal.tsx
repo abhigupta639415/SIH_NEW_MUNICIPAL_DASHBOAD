@@ -25,7 +25,7 @@ const IssueDetailsModal: React.FC<IssueDetailsModalProps> = ({ issue, onClose })
   const { addComment, updateIssueStatus } = useIssues();
   const { user } = useAuth();
   const [newComment, setNewComment] = useState('');
-  const [newStatus, setNewStatus] = useState(issue.status);
+  const [newStatus, setNewStatus] = useState('');
 
   const handleAddComment = () => {
     if (!newComment.trim()) return;

@@ -280,13 +280,15 @@ export const mockStats: DashboardStats = {
   resolved: 89,
   pending: 23,
   inProgress: 31,
-  unresolved: 13,
-  emergency: 5,
+  unresolved: 15,
+  emergency: 2,
   percentageChange: {
     total: 12,
     resolved: 18,
     pending: -8,
-    inProgress: 15
+    inProgress: 15,
+    unresolved: 17,
+    emergency: 2,
   }
 };
 
