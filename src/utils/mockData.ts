@@ -81,7 +81,8 @@ export const mockIssues: Issue[] = [
       coordinates: [28.6139, 77.2090]
     },
     photos: [
-      'https://images.pexels.com/photos/8721342/pexels-photo-8721342.jpeg?auto=compress&cs=tinysrgb&w=400'
+       
+      // 'https://images.pexels.com/photos/8721342/pexels-photo-8721342.jpeg?auto=compress&cs=tinysrgb&w=400'
     ],
     timeline: [
       {
