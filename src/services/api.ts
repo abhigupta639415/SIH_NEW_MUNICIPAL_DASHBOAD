@@ -35,7 +35,13 @@ function createIssueFromBackend(data: { title: string; description: string; imag
 
 
 export async function fetchAllIssues(): Promise<Issue[]> {
-  const res = await fetch("https://0.0.0.0:8000/core/issue/");
+  const res = await fetch("https://db99d5e95bd1.ngrok-free.app/core/issue/", {
+    headers : {
+      "ngrok-skip-browser-warning" : "69420",
+    }
+  }
+    
+  );
   const backendRaw = await res.json();
 
   const backendIssues = backendRaw.map((item: any) =>
